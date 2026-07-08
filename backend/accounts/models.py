@@ -24,6 +24,7 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.email
+        
     
 class Profile(models.Model):
     user = models.OneToOneField(
