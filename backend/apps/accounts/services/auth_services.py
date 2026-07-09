@@ -22,3 +22,11 @@ def register_user(validated_data):
     user.save()
 
     return user
+
+
+def change_password(user, current_password, new_password):
+    if not user.check_password(current_password):
+        raise ValueError("Current password is incorrect.")
+
+    user.set_password(new_password)
+    user.save()
