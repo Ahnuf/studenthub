@@ -3,7 +3,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from core.api.responses import success_response
-from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer, LogoutSerializer
 from apps.accounts.services.auth_services import register_user, generate_tokens
 from rest_framework_simplejwt.serializers import TokenRefreshSerializer
 
@@ -73,4 +73,17 @@ class MeView(APIView):
         return success_response(
             message="User fetched successfully.",
             data=serializer.data,
+        )
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = LogoutSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        serializer.save()
+
+        return success_response(
+            message="Logged out successfully."
         )
