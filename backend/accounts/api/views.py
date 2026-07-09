@@ -1,10 +1,31 @@
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
+from core.api.responses import success_response
+from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
+from accounts.services.auth_services import register_user, generate_tokens
 
-from .serializers import RegisterSerializer
-from accounts.services.auth_services import register_user
 
+class LoginView(APIView):
+
+    def post(self, request):
+
+        serializer = LoginSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        user = serializer.validated_data["user"]
+
+        tokens = generate_tokens(user)
+
+        return success_response(
+            message="Login successful.",
+            data={
+                "user": UserSerializer(user).data,
+                "tokens": tokens,
+            },
+            status_code=status.HTTP_200_OK,
+        )
 
 class RegisterView(APIView):
 
@@ -26,4 +47,16 @@ class RegisterView(APIView):
                 },
             },
             status=status.HTTP_201_CREATED,
+        )
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+
+        serializer = UserSerializer(request.user)
+
+        return success_response(
+            message="User fetched successfully.",
+            data=serializer.data,
         )
