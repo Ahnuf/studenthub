@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from core.api.responses import success_response
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
-from accounts.services.auth_services import register_user, generate_tokens
+from apps.accounts.services.auth_services import register_user, generate_tokens
 
 
 class LoginView(APIView):
