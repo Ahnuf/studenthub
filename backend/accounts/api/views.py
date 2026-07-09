@@ -3,7 +3,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 
 from .serializers import RegisterSerializer
-from .services import create_user
+from accounts.services.auth_services import register_user
 
 
 class RegisterView(APIView):
