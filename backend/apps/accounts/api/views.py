@@ -5,6 +5,20 @@ from rest_framework.views import APIView
 from core.api.responses import success_response
 from .serializers import RegisterSerializer, LoginSerializer, UserSerializer
 from apps.accounts.services.auth_services import register_user, generate_tokens
+from rest_framework_simplejwt.serializers import TokenRefreshSerializer
+
+
+
+class TokenRefreshView(APIView):
+    def post(self, request):
+        serializer = TokenRefreshSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        return success_response(
+            message="Token refreshed successfully.",
+            data=serializer.validated_data,
+            status_code=status.HTTP_200_OK,
+        )
 
 
 class LoginView(APIView):
