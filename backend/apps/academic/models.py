@@ -27,11 +27,13 @@ class University(TimeStampedModel):
         blank=True,
     )
 
-    logo = models.ImageField(
-        upload_to="universities/logos/",
-        blank=True,
-        null=True,
-    )
+    # Will add this later on. 
+
+    # logo = models.ImageField(
+    #     upload_to="universities/logos/",
+    #     blank=True,
+    #     null=True,
+    # )
 
     is_active = models.BooleanField(
         default=True,

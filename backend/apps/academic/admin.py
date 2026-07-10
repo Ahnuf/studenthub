@@ -22,5 +22,9 @@ class UniversityAdmin(admin.ModelAdmin):
         "country",
         "is_active",
     )
+    
+    list_editable = (
+        "is_active",
+    )
 
     ordering = ("name",)
