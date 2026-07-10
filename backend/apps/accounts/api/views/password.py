@@ -1,5 +1,10 @@
-from rest_framework.views import APIView
+from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.views import APIView
+
+from apps.accounts.api.serializers import ChangePasswordSerializer
+from apps.accounts.services.auth_services import change_password
+from core.api.responses import success_response, error_response
 
 
 class ChangePasswordView(APIView):
@@ -11,22 +16,18 @@ class ChangePasswordView(APIView):
 
         try:
             change_password(
-                request.user,
-                serializer.validated_data["current_password"],
-                serializer.validated_data["new_password"],
+                user=request.user,
+                current_password=serializer.validated_data["current_password"],
+                new_password=serializer.validated_data["new_password"],
             )
-        except ValueError as exc:
-            from rest_framework import status
-            from rest_framework.response import Response
 
-            return Response(
-                {
-                    "success": False,
-                    "message": str(exc),
-                },
-                status=status.HTTP_400_BAD_REQUEST,
+        except ValueError as exc:
+            return error_response(
+                message=str(exc),
+                status_code=status.HTTP_400_BAD_REQUEST,
             )
 
         return success_response(
-            message="Password changed successfully."
+            message="Password changed successfully.",
+            status_code=status.HTTP_200_OK,
         )

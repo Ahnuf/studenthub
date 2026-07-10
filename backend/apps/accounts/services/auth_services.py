@@ -1,6 +1,6 @@
+from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
-
 
 def generate_tokens(user):
     refresh = RefreshToken.for_user(user)
@@ -25,8 +25,16 @@ def register_user(validated_data):
 
 
 def change_password(user, current_password, new_password):
+    """
+    Change the authenticated user's password.
+    """
+
     if not user.check_password(current_password):
         raise ValueError("Current password is incorrect.")
 
+    validate_password(new_password, user)
+
     user.set_password(new_password)
-    user.save()
+    user.save(update_fields=["password"])
+
+    return user
