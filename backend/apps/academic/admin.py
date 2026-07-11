@@ -1,6 +1,7 @@
 from django.contrib import admin
+from .models import University, Program, Course
+from .models import Course, Program, ProgramCourse, University
 
-from .models import University, Program
 
 
 @admin.register(University)
@@ -62,4 +63,68 @@ class ProgramAdmin(admin.ModelAdmin):
         "university",
         "degree_type",
         "program_name",
+    )
+
+
+@admin.register(Course)
+class CourseAdmin(admin.ModelAdmin):
+    list_display = (
+        "title",
+        "short_title",
+        "is_active",
+    )
+
+    search_fields = (
+        "title",
+    )
+
+    list_filter = (
+        "is_active",
+    )
+
+    list_editable = (
+        "is_active",
+    )
+
+    ordering = (
+        "title",
+    )
+
+
+@admin.register(ProgramCourse)
+class ProgramCourseAdmin(admin.ModelAdmin):
+    list_display = (
+        "course_code",
+        "course",
+        "program",
+        "recommended_semester",
+        "theory_credit_hours",
+        "lab_credit_hours",
+        "total_credit_hours",
+        "category",
+        "is_active",
+    )
+
+    search_fields = (
+        "course_code",
+        "course__title",
+        "program__program_name",
+        "program__university__short_name",
+    )
+
+    list_filter = (
+        "program__university",
+        "category",
+        "recommended_semester",
+        "is_active",
+    )
+
+    list_editable = (
+        "is_active",
+    )
+
+    ordering = (
+        "program",
+        "recommended_semester",
+        "course_code",
     )
