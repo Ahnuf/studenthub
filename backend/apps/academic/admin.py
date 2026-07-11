@@ -1,6 +1,6 @@
 from django.contrib import admin
 from .models import University, Program, Course
-from .models import Course, Program, ProgramCourse, University
+from .models import Course, Program, ProgramCourse, University, AcademicSession
 
 
 
@@ -127,4 +127,41 @@ class ProgramCourseAdmin(admin.ModelAdmin):
         "program",
         "recommended_semester",
         "course_code",
+    )
+
+
+@admin.register(AcademicSession)
+class AcademicSessionAdmin(admin.ModelAdmin):
+    list_display = (
+        "term",
+        "year",
+        "university",
+        "start_date",
+        "end_date",
+        "is_current",
+        "is_active",
+    )
+
+    search_fields = (
+        "university__name",
+        "university__short_name",
+        "year",
+    )
+
+    list_filter = (
+        "term",
+        "year",
+        "university",
+        "is_current",
+        "is_active",
+    )
+
+    list_editable = (
+        "is_current",
+        "is_active",
+    )
+
+    ordering = (
+        "-year",
+        "term",
     )
