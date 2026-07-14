@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from core.models import TimeStampedModel
-from apps.academic.models import AcademicSession, Program, University
+from apps.academic.models import AcademicSession, Program, University, ProgramCourse
 
 
 
@@ -122,4 +122,153 @@ class StudentProfile(TimeStampedModel):
             f"{self.user.get_full_name() or self.user.username}"
             f" - "
             f"{self.program}"
+        )
+
+
+class CourseStatus(models.TextChoices):
+    ENROLLED = "ENROLLED", "Enrolled"
+    PASSED = "PASSED", "Passed"
+    FAILED = "FAILED", "Failed"
+    WITHDRAWN = "WITHDRAWN", "Withdrawn"
+    INCOMPLETE = "INCOMPLETE", "Incomplete"
+
+class Grade(models.TextChoices):
+    A_PLUS = "A+", "A+"
+    A = "A", "A"
+    A_MINUS = "A-", "A-"
+    B_PLUS = "B+", "B+"
+    B = "B", "B"
+    B_MINUS = "B-", "B-"
+    C_PLUS = "C+", "C+"
+    C = "C", "C"
+    C_MINUS = "C-", "C-"
+    D_PLUS = "D+", "D+"
+    D = "D", "D"
+    F = "F", "F"
+
+
+class StudentCourse(TimeStampedModel):
+    """
+    Represents a single attempt of a student taking a course.
+    """
+
+    student_profile = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name="student_courses",
+    )
+
+    program_course = models.ForeignKey(
+        ProgramCourse,
+        on_delete=models.PROTECT,
+        related_name="student_courses",
+    )
+
+    academic_session = models.ForeignKey(
+        AcademicSession,
+        on_delete=models.PROTECT,
+        related_name="student_courses",
+    )
+
+    semester_taken = models.PositiveSmallIntegerField(
+        validators=[
+            MinValueValidator(1),
+            MaxValueValidator(12),
+        ]
+    )
+
+    attempt_number = models.PositiveSmallIntegerField(
+        default=1,
+        validators=[
+            MinValueValidator(1),
+        ],
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=CourseStatus.choices,
+        default=CourseStatus.ENROLLED,
+    )
+
+    grade = models.CharField(
+        max_length=2,
+        choices=Grade.choices,
+        blank=True,
+        null=True,
+    )
+
+    marks = models.DecimalField(
+        max_digits=5,
+        decimal_places=2,
+        validators=[
+        MinValueValidator(0),
+        MaxValueValidator(100),],
+        blank=True,
+        null=True,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+    )
+
+    class Meta:
+        ordering = [
+            "-academic_session",
+            "semester_taken",
+        ]
+
+    constraints = [
+    models.UniqueConstraint(
+    fields=[
+        "student_profile",
+        "program_course",
+        "attempt_number",
+    ],
+    name="unique_student_course_attempt",
+    )
+    ]
+
+    verbose_name = "Student Course"
+    verbose_name_plural = "Student Courses"
+
+    def clean(self):
+        self.validate_program_course()
+        self.validate_academic_session()
+        self.validate_grade_status()
+
+#   Validate Program
+    def validate_program_course(self):
+        if self.program_course.program != self.student_profile.program:
+            raise ValidationError(
+            "The selected course does not belong to the student's program."
+            )
+
+#   Validate Academic Session
+    def validate_academic_session(self):
+        if (self.academic_session.university != self.student_profile.university):
+            raise ValidationError(
+            "The selected academic session does not belong to the student's university."
+            )
+
+#   Validate Grade & Status
+    def validate_grade_status(self):
+        if (self.status == CourseStatus.ENROLLED and self.grade is not None):
+            raise ValidationError(
+                "An enrolled course cannot have a final grade."
+            )
+
+        if (self.status == CourseStatus.PASSED and self.grade is None):
+            raise ValidationError(
+                "A passed course must have a grade."
+            )
+
+        if (self.status == CourseStatus.FAILED and self.grade is None):
+            raise ValidationError(
+                "A failed course must have a grade."
+            )
+
+    def __str__(self):
+        return (
+        f"{self.student_profile.user} - "
+        f"{self.program_course.course_code}"
         )

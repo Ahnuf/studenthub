@@ -1,4 +1,8 @@
+from rest_framework.response import Response
+from rest_framework import status
 from rest_framework.views import APIView
+from apps.accounts.api.serializers.register import RegisterSerializer
+from apps.accounts.services.auth_services import register_user, generate_tokens, change_password
 
 
 class RegisterView(APIView):
@@ -9,7 +13,7 @@ class RegisterView(APIView):
 
         serializer.is_valid(raise_exception=True)
 
-        user = create_user(serializer.validated_data)
+        user = register_user(serializer.validated_data)
 
         return Response(
             {

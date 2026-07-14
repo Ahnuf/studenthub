@@ -1,3 +1,13 @@
-from django.urls import path
+from django.urls import path    
+from apps.students.views.student_profile import StudentProfileAPIView
 
-urlpatterns = []
+
+app_name = "students"
+
+urlpatterns = [
+    path(
+        "profile/",
+        StudentProfileAPIView.as_view(),
+        name="student-profile",
+    ),
+]
