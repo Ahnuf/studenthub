@@ -147,25 +147,128 @@ class Grade(models.TextChoices):
     F = "F", "F"
 
 
+class EnrollmentStatus(models.TextChoices):
+    DRAFT = "DRAFT", "Draft"
+    SUBMITTED = "SUBMITTED", "Submitted"
+    APPROVED = "APPROVED", "Approved"
+    REJECTED = "REJECTED", "Rejected"
+    CANCELLED = "CANCELLED", "Cancelled"
+
+class Enrollment(TimeStampedModel):
+
+    student = models.ForeignKey(
+        StudentProfile,
+        on_delete=models.CASCADE,
+        related_name="enrollments",
+    )
+
+    academic_session = models.ForeignKey(
+        AcademicSession,
+        on_delete=models.PROTECT,
+        related_name="enrollments",
+    )
+
+    semester = models.PositiveSmallIntegerField(
+        validators=[
+        MinValueValidator(1),
+        MaxValueValidator(12),
+    ]
+    )
+
+    status = models.CharField(
+        max_length=20,
+        choices=EnrollmentStatus.choices,
+        default=EnrollmentStatus.DRAFT,
+    )
+
+    total_credit_hours = models.PositiveSmallIntegerField(
+        default=0,
+    )
+
+    submitted_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    approved_at = models.DateTimeField(
+        null=True,
+        blank=True,
+    )
+
+    remarks = models.TextField(
+        blank=True,
+    )
+
+    class Meta:
+        ordering = ("-created_at",)
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "student",
+                    "academic_session",
+                ],
+                name="unique_student_enrollment_per_session",
+            )
+        ]
+
+    from django.core.exceptions import ValidationError
+
+
+    def clean(self):
+        errors = {}
+
+        # Rule 1
+        if (
+            self.student.university_id
+            != self.academic_session.university_id
+        ):
+            errors["academic_session"] = (
+                "Selected academic session does not belong "
+                "to the student's university."
+            )
+
+        # Rule 2
+        if self.semester != self.student.current_semester:
+            errors["semester"] = (
+                "Enrollment semester must match the student's current semester."
+            )
+
+        # Rule 3
+        if self.student.academic_status != AcademicStatus.ACTIVE:
+            errors["student"] = (
+                "Only active students can enroll."
+            )
+
+        if errors:
+            raise ValidationError(errors)
+
+    def save(self, *args, **kwargs):
+        self.full_clean()
+        super().save(*args, **kwargs)
+
+
+    def __str__(self):
+        return (
+            f"{self.student.user.get_full_name()} - "
+            f"{self.academic_session.display_name}"
+        )
+
+
 class StudentCourse(TimeStampedModel):
     """
-    Represents a single attempt of a student taking a course.
+    Represents a single attempt of a student taking a course
+    within a specific enrollment.
     """
 
-    student_profile = models.ForeignKey(
-        StudentProfile,
+    enrollment = models.ForeignKey(
+        Enrollment,
         on_delete=models.CASCADE,
         related_name="student_courses",
     )
 
     program_course = models.ForeignKey(
         ProgramCourse,
-        on_delete=models.PROTECT,
-        related_name="student_courses",
-    )
-
-    academic_session = models.ForeignKey(
-        AcademicSession,
         on_delete=models.PROTECT,
         related_name="student_courses",
     )
@@ -201,8 +304,9 @@ class StudentCourse(TimeStampedModel):
         max_digits=5,
         decimal_places=2,
         validators=[
-        MinValueValidator(0),
-        MaxValueValidator(100),],
+            MinValueValidator(0),
+            MaxValueValidator(100),
+        ],
         blank=True,
         null=True,
     )
@@ -212,63 +316,96 @@ class StudentCourse(TimeStampedModel):
     )
 
     class Meta:
-        ordering = [
-            "-academic_session",
-            "semester_taken",
+        ordering = ("-created_at",)
+
+        constraints = [
+            models.UniqueConstraint(
+                fields=[
+                    "enrollment",
+                    "program_course",
+                    "attempt_number",
+                ],
+                name="unique_student_course_attempt",
+            )
         ]
 
-    constraints = [
-    models.UniqueConstraint(
-    fields=[
-        "student_profile",
-        "program_course",
-        "attempt_number",
-    ],
-    name="unique_student_course_attempt",
-    )
-    ]
-
-    verbose_name = "Student Course"
-    verbose_name_plural = "Student Courses"
+        verbose_name = "Student Course"
+        verbose_name_plural = "Student Courses"
 
     def clean(self):
         self.validate_program_course()
-        self.validate_academic_session()
         self.validate_grade_status()
 
-#   Validate Program
     def validate_program_course(self):
-        if self.program_course.program != self.student_profile.program:
+        """
+        Ensure the selected ProgramCourse belongs to the
+        student's enrolled program.
+        """
+        if (
+            self.program_course.program
+            != self.enrollment.student.program
+        ):
             raise ValidationError(
-            "The selected course does not belong to the student's program."
+                {
+                    "program_course": (
+                        "The selected course does not belong "
+                        "to the student's program."
+                    )
+                }
             )
 
-#   Validate Academic Session
-    def validate_academic_session(self):
-        if (self.academic_session.university != self.student_profile.university):
-            raise ValidationError(
-            "The selected academic session does not belong to the student's university."
-            )
-
-#   Validate Grade & Status
     def validate_grade_status(self):
-        if (self.status == CourseStatus.ENROLLED and self.grade is not None):
+        """
+        Validate consistency between course status and grade.
+        """
+
+        if (
+            self.status == CourseStatus.ENROLLED
+            and self.grade is not None
+        ):
             raise ValidationError(
-                "An enrolled course cannot have a final grade."
+                {
+                    "grade": (
+                        "An enrolled course cannot have a final grade."
+                    )
+                }
             )
 
-        if (self.status == CourseStatus.PASSED and self.grade is None):
+        if (
+            self.status == CourseStatus.PASSED
+            and self.grade is None
+        ):
             raise ValidationError(
-                "A passed course must have a grade."
+                {
+                    "grade": (
+                        "A passed course must have a grade."
+                    )
+                }
             )
 
-        if (self.status == CourseStatus.FAILED and self.grade is None):
+        if self.semester_taken != self.enrollment.semester:
             raise ValidationError(
-                "A failed course must have a grade."
+                {
+                    "semester_taken": (
+                        "Semester taken must match the enrollment semester."
+                    )
+                }
+            )
+
+        if (
+            self.status == CourseStatus.FAILED
+            and self.grade is None
+        ):
+            raise ValidationError(
+                {
+                    "grade": (
+                        "A failed course must have a grade."
+                    )
+                }
             )
 
     def __str__(self):
         return (
-        f"{self.student_profile.user} - "
-        f"{self.program_course.course_code}"
+            f"{self.enrollment.student.user.get_full_name()} - "
+            f"{self.program_course.course.course_code}"
         )

@@ -364,3 +364,5 @@ class AcademicSession(TimeStampedModel):
     @property
     def display_name(self):
         return f"{self.get_term_display()} {self.year}"
+
+

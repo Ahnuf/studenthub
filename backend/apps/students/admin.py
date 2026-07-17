@@ -1,5 +1,8 @@
 from django.contrib import admin
-from .models import StudentProfile, StudentCourse
+
+from .models import Enrollment, StudentCourse, StudentProfile
+
+
 
 
 @admin.register(StudentProfile)
@@ -40,12 +43,46 @@ class StudentProfileAdmin(admin.ModelAdmin):
     )
 
 
+@admin.register(Enrollment)
+class EnrollmentAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "student",
+        "academic_session",
+        "semester",
+        "status",
+        "total_credit_hours",
+    )
+
+    list_filter = (
+        "status",
+        "academic_session",
+        "semester",
+    )
+
+    search_fields = (
+        "student__user__username",
+        "student__user__email",
+        "student__registration_number",
+        "student__roll_number",
+    )
+
+    autocomplete_fields = (
+        "student",
+        "academic_session",
+    )
+
+    ordering = (
+        "-academic_session__start_date",
+    )
+
+
 @admin.register(StudentCourse)
 class StudentCourseAdmin(admin.ModelAdmin):
+
     list_display = (
-        "student_profile",
+        "enrollment",
         "program_course",
-        "academic_session",
         "semester_taken",
         "attempt_number",
         "status",
@@ -54,24 +91,22 @@ class StudentCourseAdmin(admin.ModelAdmin):
 
     list_filter = (
         "status",
-        "academic_session",
         "semester_taken",
+        "enrollment__academic_session",
     )
 
     search_fields = (
-        "student_profile__user__username",
-        "student_profile__user__email",
+        "enrollment__student__user__username",
+        "enrollment__student__user__email",
         "program_course__course__title",
-        "program_course__course_code",
+        "program_course__course__course_code",
     )
 
     autocomplete_fields = (
-        "student_profile",
+        "enrollment",
         "program_course",
-        "academic_session",
     )
 
     ordering = (
-        "-academic_session",
-        "student_profile",
+        "-created_at",
     )

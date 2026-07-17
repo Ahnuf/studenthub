@@ -68,7 +68,6 @@ class StudentProfileDetailSerializer(serializers.ModelSerializer):
 
 
 class StudentProfileUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
 
         model = StudentProfile
