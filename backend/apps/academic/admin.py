@@ -1,6 +1,14 @@
 from django.contrib import admin
-from .models import University, Program, Course
-from .models import Course, Program, ProgramCourse, University, AcademicSession
+# from .models import University, Program, Course
+from apps.academic.models import (
+    AcademicSession,
+    Course,
+    GradePoint,
+    GradingScheme,
+    Program,
+    ProgramCourse,
+    University,
+)
 
 
 
