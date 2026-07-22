@@ -42,6 +42,30 @@ class EnrollmentSelector:
         )
 
     @staticmethod
+    def get_current_enrollment(student):
+        """
+        Return the student's Enrollment tied to their university's
+        current AcademicSession (is_current=True), if one exists.
+        """
+
+        return (
+            Enrollment.objects
+            .select_related(
+                "academic_session",
+            )
+            .prefetch_related(
+                "student_courses",
+                "student_courses__program_course",
+                "student_courses__program_course__course",
+            )
+            .filter(
+                student=student,
+                academic_session__is_current=True,
+            )
+            .first()
+        )
+
+    @staticmethod
     def list_completed_courses(student):
         return (
             StudentCourse.objects

@@ -26,9 +26,6 @@ class GradingScheme(TimeStampedModel):
         related_name="grading_schemes",
     )
 
-    name = models.CharField(
-        max_length=100,
-    )
 
     repeat_policy = models.CharField(
         max_length=30,
@@ -109,5 +106,6 @@ class GradingScheme(TimeStampedModel):
 
     def __str__(self):
         return (
-            f"{self.university.name} - {self.name}"
+            f"{self.university.short_name} "
+            f"({self.effective_from.year})"
         )

@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.students',
     'apps.academic',
+    'apps.assignments',
     "rest_framework",
     "rest_framework_simplejwt",
     "drf_spectacular",
@@ -151,3 +152,12 @@ REST_FRAMEWORK = {
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
 }
+
+# REST_FRAMEWORK = {
+#     "DEFAULT_AUTHENTICATION_CLASSES": (
+#         "rest_framework_simplejwt.authentication.JWTAuthentication",
+#     ),
+#     "DEFAULT_PERMISSION_CLASSES": (
+#         "rest_framework.permissions.IsAuthenticated",
+#     ),
+# }

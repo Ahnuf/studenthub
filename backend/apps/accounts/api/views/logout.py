@@ -1,4 +1,6 @@
 from rest_framework.views import APIView
+from core.api.responses import success_response
+from apps.accounts.api.serializers import LogoutSerializer
 from rest_framework.permissions import IsAuthenticated
 
 

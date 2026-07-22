@@ -6,6 +6,7 @@ from .student_profile import StudentProfile
 from apps.academic.models import AcademicSession
 from core.models import TimeStampedModel
 from django.db import models
+from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator, MaxValueValidator
 
 
@@ -68,8 +69,6 @@ class Enrollment(TimeStampedModel):
                 name="unique_student_enrollment_per_session",
             )
         ]
-
-    from django.core.exceptions import ValidationError
 
 
     def clean(self):

@@ -1,5 +1,4 @@
 from django.db.models import QuerySet
-
 from apps.students.models import (
     Enrollment,
     StudentCourse,
@@ -65,6 +64,32 @@ class TranscriptSelector:
             )
             .select_related(
                 "academic_session",
+            )
+            .order_by(
+                "semester",
+            )
+        )
+
+    @staticmethod
+    def list_enrollments(
+        student: StudentProfile,
+    ):
+        """
+        Return all enrollments for a student ordered by semester.
+        """
+
+        return (
+            Enrollment.objects
+            .select_related(
+                "academic_session",
+            )
+            .prefetch_related(
+                "student_courses",
+                "student_courses__program_course",
+                "student_courses__program_course__course",
+            )
+            .filter(
+                student=student,
             )
             .order_by(
                 "semester",

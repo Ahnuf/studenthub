@@ -35,8 +35,6 @@ class StudentService:
         except DjangoValidationError as e:
             raise ValidationError(e.message_dict)
 
-        profile.full_clean()
-
         profile.save()
 
         return profile
@@ -53,8 +51,6 @@ class StudentService:
 
         for field, value in validated_data.items():
             setattr(profile, field, value)
-
-        profile.full_clean()
 
         try:
             profile.full_clean()

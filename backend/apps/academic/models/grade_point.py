@@ -99,6 +99,9 @@ class GradePoint(TimeStampedModel):
         Ensure mark ranges do not overlap within the same grading scheme.
         """
 
+        if not self.grading_scheme_id:
+            return
+
         overlapping = (
             GradePoint.objects.filter(
                 grading_scheme=self.grading_scheme,
@@ -123,6 +126,6 @@ class GradePoint(TimeStampedModel):
 
     def __str__(self):
         return (
-            f"{self.grading_scheme.name} - "
+            f"{self.grading_scheme} - "
             f"{self.grade} ({self.grade_points})"
         )

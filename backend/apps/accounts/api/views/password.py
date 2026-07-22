@@ -1,7 +1,6 @@
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.views import APIView
-
 from apps.accounts.api.serializers import ChangePasswordSerializer
 from apps.accounts.services.auth_services import change_password
 from core.api.responses import success_response, error_response

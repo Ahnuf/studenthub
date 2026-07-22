@@ -1,5 +1,6 @@
 from django.db import models
 from apps.students.enums import AcademicStatus
+from django.core.exceptions import ValidationError
 from apps.academic.models import (
     AcademicSession,
     Program,

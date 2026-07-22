@@ -34,7 +34,7 @@ class EnrollmentService:
             )
         )
 
-        EnrollmentService._validate_student(
+        EnrollmentService._validate_student_eligibility(
         student=student,
         academic_session=academic_session,
         )
@@ -45,8 +45,8 @@ class EnrollmentService:
 
         EnrollmentService._validate_course_selection(
             student=student,
-            academic_session=academic_session,
             program_courses=program_courses,
+            program_course_ids=program_course_ids,
         )
 
         total_credit_hours = (
@@ -76,8 +76,6 @@ class EnrollmentService:
             """
             Create StudentCourse records for the enrollment.
             """
-
-            student_courses = []
 
             for program_course in program_courses:
                 student_course = StudentCourse(
@@ -146,7 +144,7 @@ class EnrollmentService:
             )
 
     @staticmethod
-    def _validate_student(
+    def _validate_student_eligibility(
         student: StudentProfile,
         academic_session: AcademicSession,
     ):
@@ -182,14 +180,14 @@ class EnrollmentService:
     @staticmethod
     def _validate_course_selection(
     student: StudentProfile,
-    academic_session: AcademicSession,
     program_courses: list[ProgramCourse],
+    program_course_ids: list[int],
     ):
         """
         Validate the selected courses.
         """
 
-        if not program_courses:
+        if len(program_courses) != len(program_course_ids):
             raise ValidationError(
                 {
                     "program_course_ids": (

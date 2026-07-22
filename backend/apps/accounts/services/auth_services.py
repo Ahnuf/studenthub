@@ -1,4 +1,5 @@
 from django.contrib.auth.password_validation import validate_password
+from django.core.exceptions import ValidationError as DjangoValidationError
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.tokens import RefreshToken
 
@@ -19,6 +20,13 @@ def register_user(validated_data):
 
     user = User(**validated_data)
     user.set_password(password)
+
+    try:
+        user = register_user(serializer.validated_data)
+    except ValueError as exc:
+        return error_response(message=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
+
+    user.full_clean()
     user.save()
 
     return user
@@ -32,7 +40,10 @@ def change_password(user, current_password, new_password):
     if not user.check_password(current_password):
         raise ValueError("Current password is incorrect.")
 
-    validate_password(new_password, user)
+    try:
+        validate_password(new_password, user)
+    except DjangoValidationError as e:
+        raise ValueError(" ".join(e.messages))
 
     user.set_password(new_password)
     user.save(update_fields=["password"])

@@ -1,6 +1,7 @@
 from apps.students.enums import CourseStatus
 from apps.academic.models.enums import Grade
 from .enrollment import Enrollment
+from django.core.exceptions import ValidationError
 from apps.academic.models import ProgramCourse
 from core.models import TimeStampedModel
 from django.db import models

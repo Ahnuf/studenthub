@@ -6,7 +6,7 @@ from .course import Course
 from .grade_point import GradePoint
 from .grading_scheme import GradingScheme
 from .program import Program
-from .enums import RepeatPolicy
+from .enums import RepeatPolicy, Grade
 from .university import University
 from django.core.exceptions import ValidationError
 from django.core.validators import MaxValueValidator, MinValueValidator, RegexValidator

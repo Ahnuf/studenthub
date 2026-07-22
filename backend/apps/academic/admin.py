@@ -1,5 +1,4 @@
 from django.contrib import admin
-# from .models import University, Program, Course
 from apps.academic.models import (
     AcademicSession,
     Course,
@@ -9,6 +8,7 @@ from apps.academic.models import (
     ProgramCourse,
     University,
 )
+# from .grade_point_admin import GradePointInline
 
 
 
@@ -173,3 +173,57 @@ class AcademicSessionAdmin(admin.ModelAdmin):
         "-year",
         "term",
     )
+
+class GradePointInline(admin.TabularInline):
+    model = GradePoint
+    extra = 0
+    show_change_link = True
+
+    fields = (
+        "grade",
+        "grade_points",
+        "minimum_marks",
+        "maximum_marks",
+    )
+
+    ordering = (
+        "-minimum_marks",
+    )
+
+@admin.register(GradingScheme)
+class GradingSchemeAdmin(admin.ModelAdmin):
+
+    list_display = (
+        "university",
+        "repeat_policy",
+        "is_active",
+        "effective_from",
+        "effective_to",
+    )
+
+    list_filter = (
+        "university",
+        "repeat_policy",
+        "is_active",
+    )
+
+    search_fields = (
+        "university__name",
+        "university__short_name",
+    )
+
+    autocomplete_fields = (
+        "university",
+    )
+
+    list_editable = (
+        "is_active",
+    )
+
+    ordering = (
+        "university",
+    )
+
+    inlines = [
+        GradePointInline,
+    ]

@@ -1,8 +1,8 @@
-from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from apps.accounts.api.serializers.register import RegisterSerializer
-from apps.accounts.services.auth_services import register_user, generate_tokens, change_password
+from apps.accounts.services.auth_services import register_user
+from core.api.responses import success_response
 
 
 class RegisterView(APIView):
@@ -15,14 +15,11 @@ class RegisterView(APIView):
 
         user = register_user(serializer.validated_data)
 
-        return Response(
-            {
-                "success": True,
-                "message": "User registered successfully.",
-                "data": {
-                    "id": user.id,
-                    "email": user.email,
-                },
+        return success_response(
+            message="User registered successfully.",
+            data={
+                "id": user.id,
+                "email": user.email,
             },
-            status=status.HTTP_201_CREATED,
+            status_code=status.HTTP_201_CREATED,
         )
