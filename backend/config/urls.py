@@ -8,8 +8,8 @@ urlpatterns = [
     path(f"{API_PREFIX}/auth/", include("apps.accounts.api.urls")),
     path("api/schema/", SpectacularAPIView.as_view(), name="schema"),
     path("api/docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),
-    path("api/v1/students/", include("apps.students.urls")),
-    path("api/v1/academic/",include("apps.academic.api.urls")),
-    path("api/v1/assignments/",include("apps.assignments.urls")),
-    path("api/v1/timetable/",include("apps.timetable.urls")),
+    path(f"{API_PREFIX}/students/", include("apps.students.urls")),
+    path(f"{API_PREFIX}/academic/",include("apps.academic.api.urls")),
+    path(f"{API_PREFIX}/assignments/",include("apps.assignments.urls")),
+    path(f"{API_PREFIX}/timetable/",include("apps.timetable.urls")),
 ]

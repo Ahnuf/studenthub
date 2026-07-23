@@ -55,6 +55,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.students',
     'apps.academic',
+    'apps.notes',
     'apps.timetable',
     'apps.assignments',
     "rest_framework",

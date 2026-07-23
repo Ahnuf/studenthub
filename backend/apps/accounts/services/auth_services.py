@@ -20,12 +20,6 @@ def register_user(validated_data):
 
     user = User(**validated_data)
     user.set_password(password)
-
-    try:
-        user = register_user(serializer.validated_data)
-    except ValueError as exc:
-        return error_response(message=str(exc), status_code=status.HTTP_400_BAD_REQUEST)
-
     user.full_clean()
     user.save()
 
