@@ -1,4 +1,4 @@
-from django.db.models import Q
+from django.contrib.postgres.search import SearchQuery, SearchRank
 
 from apps.notes.models import Note
 
@@ -17,8 +17,13 @@ class NoteSelector:
     def list_notes(course_id=None, query=None):
         """
         Return active notes, optionally filtered by course and/or
-        a free-text search against heading/sub-heading/course
-        title.
+        a free-text search.
+
+        The search runs against a weighted Postgres tsvector
+        (main_heading > sub_heading > description > file content),
+        so a note whose *content* mentions the topic surfaces even
+        when its title doesn't -- and results are ranked by
+        relevance rather than just filtered.
         """
 
         queryset = (
@@ -36,10 +41,13 @@ class NoteSelector:
             queryset = queryset.filter(course_id=course_id)
 
         if query:
-            queryset = queryset.filter(
-                Q(main_heading__icontains=query)
-                | Q(sub_heading__icontains=query)
-                | Q(course__title__icontains=query)
+            search_query = SearchQuery(query, search_type="websearch")
+
+            queryset = (
+                queryset
+                .filter(search_vector=search_query)
+                .annotate(rank=SearchRank("search_vector", search_query))
+                .order_by("-rank", "-created_at")
             )
 
         return queryset

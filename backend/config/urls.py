@@ -12,4 +12,5 @@ urlpatterns = [
     path(f"{API_PREFIX}/academic/",include("apps.academic.api.urls")),
     path(f"{API_PREFIX}/assignments/",include("apps.assignments.urls")),
     path(f"{API_PREFIX}/timetable/",include("apps.timetable.urls")),
+    path("api/v1/qa/", include("apps.QA.urls")),
 ]

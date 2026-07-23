@@ -3,9 +3,9 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 
-from apps.notes.selectors.note_selector import NoteSelector
-from apps.notes.services.note_service import NoteService
-from apps.notes.serializers.note_serializer import (
+from apps.notes.selectors.notes_selector import NoteSelector
+from apps.notes.services.notes_service import NoteService
+from apps.notes.serializers.notes_serializer import (
     NoteUploadSerializer,
     NoteDetailSerializer,
     NoteUpdateSerializer,

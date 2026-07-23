@@ -1,4 +1,6 @@
 from django.conf import settings
+from django.contrib.postgres.indexes import GinIndex
+from django.contrib.postgres.search import SearchVectorField
 from django.core.exceptions import ValidationError
 from django.core.validators import FileExtensionValidator
 from django.db import models
@@ -9,6 +11,11 @@ from apps.academic.models import Course
 ALLOWED_NOTE_EXTENSIONS = [
     "pdf", "doc", "docx", "ppt", "pptx", "jpg", "jpeg", "png",
 ]
+
+# Only these types actually have extractable text. Images are
+# allowed as uploads (e.g. a photographed whiteboard) but contribute
+# nothing to extracted_text -- OCR is a separate, later feature.
+EXTRACTABLE_EXTENSIONS = ["pdf", "doc", "docx", "ppt", "pptx"]
 
 MAX_NOTE_FILE_SIZE_MB = 20
 
@@ -61,10 +68,30 @@ class Note(TimeStampedModel):
         default=True,
     )
 
+    # --- Search-related fields (never serialized/exposed to users) ---
+
+    extracted_text = models.TextField(
+        blank=True,
+        editable=False,
+        help_text=(
+            "Text pulled from the uploaded file at save time. "
+            "Used only for search; never returned by the API."
+        ),
+    )
+
+    search_vector = SearchVectorField(
+        null=True,
+        editable=False,
+        help_text="Postgres full-text search index, kept in sync via NoteService.",
+    )
+
     class Meta:
         ordering = ["-created_at"]
         verbose_name = "Note"
         verbose_name_plural = "Notes"
+        indexes = [
+            GinIndex(fields=["search_vector"], name="note_search_vector_idx"),
+        ]
 
     def clean(self):
         self._validate_file_size()
