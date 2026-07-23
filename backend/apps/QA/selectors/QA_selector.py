@@ -70,3 +70,39 @@ class QASelector:
             .filter(id=answer_id)
             .first()
         )
+
+    def list_my_questions(user, limit: int = 5):
+        """
+        A user's own recently asked questions, for the dashboard's
+        "your recent activity" widget.
+        """
+ 
+        return (
+            Question.objects
+            .select_related("course")
+            .filter(user=user)
+            .annotate(
+                answer_count=Count("answers"),
+                is_resolved=Exists(
+                    Answer.objects.filter(
+                        question=OuterRef("pk"),
+                        is_accepted=True,
+                    )
+                ),
+            )
+            .order_by("-created_at")[:limit]
+        )
+ 
+    @staticmethod
+    def list_my_answers(user, limit: int = 5):
+        """
+        A user's own recently posted answers, for the dashboard.
+        """
+ 
+        return (
+            Answer.objects
+            .select_related("question", "question__course")
+            .filter(user=user)
+            .annotate(vote_count=Count("votes"))
+            .order_by("-created_at")[:limit]
+        )
