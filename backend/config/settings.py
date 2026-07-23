@@ -56,6 +56,7 @@ INSTALLED_APPS = [
     'apps.accounts',
     'apps.students',
     'apps.academic',
+    'apps.attendance',
     'apps.notes',
     'apps.QA',
     'apps.timetable',
