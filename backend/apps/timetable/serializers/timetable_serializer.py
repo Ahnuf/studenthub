@@ -1,13 +1,13 @@
 from rest_framework import serializers
 
-from apps.assignments.models import Assignment
-from apps.assignments.services.assignments_service import AssignmentService
+from apps.timetable.models import TimetableEntry
+from apps.timetable.services.timetable_service import TimetableService
 
 
-class AssignmentCreateSerializer(serializers.ModelSerializer):
+class TimetableEntryCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Assignment
+        model = TimetableEntry
         exclude = (
             "user",
             "created_at",
@@ -17,29 +17,29 @@ class AssignmentCreateSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         user = self.context["request"].user
 
-        return AssignmentService.create_assignment(
+        return TimetableService.create_entry(
             user=user,
             **validated_data,
         )
 
 
-class AssignmentDetailSerializer(serializers.ModelSerializer):
+class TimetableEntryDetailSerializer(serializers.ModelSerializer):
 
-    status_display = serializers.CharField(
-        source="get_status_display",
+    day_of_week_display = serializers.CharField(
+        source="get_day_of_week_display",
         read_only=True,
     )
 
     class Meta:
-        model = Assignment
+        model = TimetableEntry
         fields = (
             "id",
             "course_name",
-            "title",
-            "description",
-            "due_date",
-            "status",
-            "status_display",
+            "day_of_week",
+            "day_of_week_display",
+            "start_time",
+            "end_time",
+            "location",
             "created_at",
             "updated_at",
         )
@@ -50,10 +50,10 @@ class AssignmentDetailSerializer(serializers.ModelSerializer):
         )
 
 
-class AssignmentUpdateSerializer(serializers.ModelSerializer):
+class TimetableEntryUpdateSerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Assignment
+        model = TimetableEntry
         exclude = (
             "user",
             "created_at",
@@ -61,7 +61,7 @@ class AssignmentUpdateSerializer(serializers.ModelSerializer):
         )
 
     def update(self, instance, validated_data):
-        return AssignmentService.update_assignment(
+        return TimetableService.update_entry(
             instance,
             **validated_data,
         )

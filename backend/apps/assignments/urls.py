@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.assignments.views.assignment_view import (
+from apps.assignments.views.assignments_view import (
     AssignmentListCreateAPIView,
     AssignmentDetailAPIView,
 )

@@ -52,8 +52,22 @@ class AcademicPerformanceSerializer(serializers.Serializer):
     )
 
 
+class AssignmentSummarySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    course_name = serializers.CharField()
+    title = serializers.CharField()
+    due_date = serializers.DateField()
+    status = serializers.CharField()
+
+
+class AssignmentsDueSoonSerializer(serializers.Serializer):
+    upcoming = AssignmentSummarySerializer(many=True)
+    overdue = AssignmentSummarySerializer(many=True)
+
+
 class AcademicProgressDashboardSerializer(serializers.Serializer):
     academic_identity = AcademicIdentitySerializer()
     current_semester = CurrentSemesterSerializer()
     degree_progress = DegreeProgressSerializer()
     performance = AcademicPerformanceSerializer()
+    assignments_due_soon = AssignmentsDueSoonSerializer()

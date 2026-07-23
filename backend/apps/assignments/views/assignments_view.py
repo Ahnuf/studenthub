@@ -4,9 +4,9 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.response import Response
 
-from apps.assignments.selectors.assignment_selector import AssignmentSelector
-from apps.assignments.services.assignment_service import AssignmentService
-from apps.assignments.serializers.assignment_serializer import (
+from apps.assignments.selectors.assignments_selector import AssignmentSelector
+from apps.assignments.services.assignments_service import AssignmentService
+from apps.assignments.serializers.assignments_serializer import (
     AssignmentCreateSerializer,
     AssignmentDetailSerializer,
     AssignmentUpdateSerializer,

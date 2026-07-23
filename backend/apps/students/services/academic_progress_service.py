@@ -6,6 +6,7 @@ from apps.students.selectors.enrollment_selector import EnrollmentSelector
 from apps.students.selectors.transcript_selector import TranscriptSelector
 from apps.academic.selectors.program_selector import ProgramSelector
 from apps.academic.services.grading_service import GradingService
+from apps.assignments.selectors.assignments_selector import AssignmentSelector
 
 
 class AcademicProgressService:
@@ -20,10 +21,11 @@ class AcademicProgressService:
     - GPA figures are resolved through GradingService, which owns
       grade interpretation via the university's active GradingScheme.
 
-    Scope: MVP dashboard only (Academic Identity, Current Semester,
-    Degree Progress, CGPA, Expected Graduation). Backlog detection,
-    graduation audit, timeline, and AI insights are Phase 2/3 and
-    intentionally not included here yet.
+    Scope: MVP dashboard (Academic Identity, Current Semester,
+    Degree Progress, CGPA, Expected Graduation) plus the additive
+    Assignments Due Soon widget (docs/09-assignments.md). Backlog
+    detection, graduation audit, timeline, and AI insights remain
+    Phase 2/3 and are intentionally not included here yet.
     """
 
     @staticmethod
@@ -53,6 +55,11 @@ class AcademicProgressService:
                 AcademicProgressService._build_performance(
                     student=student,
                     student_courses=student_courses,
+                )
+            ),
+            "assignments_due_soon": (
+                AcademicProgressService._build_assignments_summary(
+                    student
                 )
             ),
         }
@@ -197,4 +204,31 @@ class AcademicProgressService:
 
         return {
             "cgpa": cgpa,
+        }
+
+    @staticmethod
+    def _build_assignments_summary(student: StudentProfile) -> dict:
+        """
+        Additive widget (docs/09-assignments.md) — assignments due
+        in the next 7 days, and overdue assignments not marked
+        COMPLETED. Assignments are owned by the User, not the
+        StudentProfile, so we query through student.user.
+        """
+
+        upcoming = list(
+            AssignmentSelector.list_upcoming(
+                user=student.user,
+                days=7,
+            )
+        )
+
+        overdue = list(
+            AssignmentSelector.list_overdue(
+                user=student.user,
+            )
+        )
+
+        return {
+            "upcoming": upcoming,
+            "overdue": overdue,
         }
