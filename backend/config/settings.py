@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     'apps.attendance',
     'apps.flashcards',
     'apps.notes',
+    'apps.quizzes',
     'apps.QA',
     'apps.timetable',
     'apps.assignments',
@@ -151,6 +152,16 @@ USE_TZ = True
 
 STATIC_URL = 'static/'
 
+
+EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
+
+REST_FRAMEWORK = {
+    # ... your existing settings ...
+    "DEFAULT_THROTTLE_RATES": {
+        "password_reset": "5/hour",
+        "email_verification": "5/hour",
+    },
+}
 
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
