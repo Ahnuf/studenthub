@@ -2,8 +2,8 @@ from django.core.exceptions import ValidationError as DjangoValidationError
 from django.db import transaction
 from rest_framework.exceptions import PermissionDenied, ValidationError
 
-from apps.QA.models import Answer, AnswerVote, Question
-from apps.QA.selectors.QA_selector import QASelector
+from apps.qa.models import Answer, AnswerVote, Question
+from apps.qa.selectors.QA_selector import QASelector
 
 
 class QAService:
@@ -84,6 +84,11 @@ class QAService:
         Returns {"has_voted": bool, "vote_count": int} so the view
         can respond without a second query round-trip for the count.
         """
+
+        if answer.user_id == user.id:
+            raise PermissionDenied(
+                "You cannot upvote your own answer."
+            )
 
         existing_vote = AnswerVote.objects.filter(
             answer=answer,

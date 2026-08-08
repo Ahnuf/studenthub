@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
-
+from rest_framework.throttling import ScopedRateThrottle
 from apps.flashcards.selectors.flashcard_selector import FlashcardSelector
 from apps.flashcards.services.flashcard_service import FlashcardService
 from apps.flashcards.serializers.flashcard_serializer import (
@@ -18,7 +18,15 @@ from core.api.responses import success_response
 
 
 class DeckListCreateAPIView(GenericAPIView):
+
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -120,6 +128,13 @@ class CardListCreateAPIView(GenericAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == "POST":

@@ -10,9 +10,14 @@ For the full list of settings and their values, see
 https://docs.djangoproject.com/en/6.0/ref/settings/
 """
 
+import os
 from pathlib import Path
 from decouple import config
 from datetime import timedelta
+from dotenv import load_dotenv
+
+
+load_dotenv()
 
 # JWT
 
@@ -34,7 +39,37 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = config("DEBUG", default=True, cast=bool)
+DEBUG = os.environ.get("DEBUG", "False") == "True"
+
+if DEBUG:
+    STORAGES = {
+        "default": {
+            "BACKEND": "django.core.files.storage.FileSystemStorage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+else:
+    STORAGES = {
+        "default": {
+            "BACKEND": "storages.backends.s3boto3.S3Boto3Storage",
+        },
+        "staticfiles": {
+            "BACKEND": "django.contrib.staticfiles.storage.StaticFilesStorage",
+        },
+    }
+
+    AWS_ACCESS_KEY_ID = os.environ.get("B2_KEY_ID")
+    AWS_SECRET_ACCESS_KEY = os.environ.get("B2_APPLICATION_KEY")
+    AWS_STORAGE_BUCKET_NAME = os.environ.get("B2_BUCKET_NAME")
+    AWS_S3_ENDPOINT_URL = os.environ.get("B2_ENDPOINT_URL")
+    AWS_S3_REGION_NAME = os.environ.get("B2_REGION")
+
+    AWS_S3_ADDRESSING_STYLE = "virtual"
+    AWS_DEFAULT_ACL = None
+    AWS_QUERYSTRING_AUTH = True
+    AWS_QUERYSTRING_EXPIRE = 3600
 
 ALLOWED_HOSTS = []
 
@@ -53,6 +88,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django.contrib.postgres',
+    'storages',
     'apps.accounts',
     'apps.students',
     'apps.academic',
@@ -60,7 +96,7 @@ INSTALLED_APPS = [
     'apps.flashcards',
     'apps.notes',
     'apps.quizzes',
-    'apps.QA',
+    'apps.qa',
     'apps.timetable',
     'apps.assignments',
     "rest_framework",

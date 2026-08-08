@@ -12,8 +12,8 @@ urlpatterns = [
     path(f"{API_PREFIX}/academic/",include("apps.academic.api.urls")),
     path(f"{API_PREFIX}/assignments/",include("apps.assignments.urls")),
     path(f"{API_PREFIX}/timetable/",include("apps.timetable.urls")),
-    path("api/v1/qa/", include("apps.QA.urls")),
-    path("api/v1/quiz/", include("apps.quizzes.urls")),
-    path("api/v1/notes/", include("apps.notes.urls")),
-    path("api/v1/flashcards/", include("apps.flashcards.urls")),
+    path(f"{API_PREFIX}/qa/", include("apps.qa.urls")),
+    path(f"{API_PREFIX}/quizzes/", include("apps.quizzes.urls")),
+    path(f"{API_PREFIX}/notes/", include("apps.notes.urls")),
+    path(f"{API_PREFIX}/flashcards/", include("apps.flashcards.urls")),
 ]

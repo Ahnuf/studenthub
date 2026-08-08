@@ -11,7 +11,7 @@ from apps.assignments.selectors.assignments_selector import AssignmentSelector
 from apps.timetable.selectors.timetable_selector import TimetableSelector
 from apps.notes.selectors.notes_selector import NoteSelector
 from apps.flashcards.selectors.flashcard_selector import FlashcardSelector
-from apps.QA.selectors.QA_selector import QASelector
+from apps.qa.selectors.QA_selector import QASelector
 from apps.attendance.selectors.attendance_selector import AttendanceSelector
 
 

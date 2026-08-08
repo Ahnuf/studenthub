@@ -12,7 +12,7 @@ from apps.attendance.serializers.attendance_serializer import (
     StudentCourseAttendanceSerializer,
 )
 from apps.students.models import StudentCourse
-from core.api.responses import success_response
+from core.api.responses import success_response, error_response
 
 
 class AttendanceMarkAPIView(GenericAPIView):
@@ -78,9 +78,8 @@ class AttendanceRosterAPIView(GenericAPIView):
         academic_session_id = request.query_params.get("academic_session_id")
 
         if not program_course_id or not academic_session_id:
-            return success_response(
+            return error_response(
                 message="program_course_id and academic_session_id are required.",
-                data=[],
                 status_code=status.HTTP_400_BAD_REQUEST,
             )
 

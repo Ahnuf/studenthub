@@ -1,7 +1,7 @@
 from rest_framework import serializers
 
-from apps.QA.models import Answer, Question
-from apps.QA.services.QA_service import QAService
+from apps.qa.models import Answer, Question
+from apps.qa.services.QA_service import QAService
 
 
 class QuestionCreateSerializer(serializers.ModelSerializer):

@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
-
+from rest_framework.throttling import ScopedRateThrottle
 from apps.quizzes.selectors.quiz_selector import QuizSelector
 from apps.quizzes.services.quiz_service import QuizService
 from apps.quizzes.serializers.quiz_serializer import (
@@ -22,6 +22,13 @@ from core.api.responses import success_response
 class QuizListCreateAPIView(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -121,6 +128,13 @@ class QuizQuestionListCreateAPIView(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
 
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
+
     def get_serializer_class(self):
         if self.request.method == "POST":
             return QuizQuestionCreateSerializer
@@ -210,6 +224,13 @@ class QuizAttemptListSubmitAPIView(GenericAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "quiz_attempt"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == "POST":

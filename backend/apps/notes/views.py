@@ -2,7 +2,7 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
-
+from rest_framework.throttling import ScopedRateThrottle
 from apps.notes.selectors.notes_selector import NoteSelector
 from apps.notes.services.notes_service import NoteService
 from apps.notes.serializers.notes_serializer import (
@@ -20,6 +20,14 @@ class NoteListUploadAPIView(GenericAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
+
 
     def get_serializer_class(self):
         if self.request.method == "POST":

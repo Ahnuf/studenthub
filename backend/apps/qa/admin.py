@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from apps.QA.models import Question, Answer, AnswerVote
+from apps.qa.models import Question, Answer, AnswerVote
 
 
 class AnswerInline(admin.TabularInline):

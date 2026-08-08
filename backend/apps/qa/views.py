@@ -2,10 +2,10 @@ from rest_framework import status
 from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
-
-from apps.QA.selectors.QA_selector import QASelector
-from apps.QA.services.QA_service import QAService
-from apps.QA.serializers.QA_serializer import (
+from rest_framework.throttling import ScopedRateThrottle
+from apps.qa.selectors.QA_selector import QASelector
+from apps.qa.services.QA_service import QAService
+from apps.qa.serializers.QA_serializer import (
     QuestionCreateSerializer,
     QuestionListSerializer,
     QuestionDetailSerializer,
@@ -22,6 +22,13 @@ class QuestionListCreateAPIView(GenericAPIView):
     """
 
     permission_classes = [IsAuthenticated]
+
+    def get_throttles(self):
+        if self.request.method == "POST":
+            self.throttle_scope = "content_creation"
+            return [ScopedRateThrottle()]
+
+        return super().get_throttles()
 
     def get_serializer_class(self):
         if self.request.method == "POST":
@@ -93,6 +100,9 @@ class AnswerListCreateAPIView(GenericAPIView):
 
     permission_classes = [IsAuthenticated]
     serializer_class = AnswerCreateSerializer
+
+    throttle_scope = "content_creation"
+    throttle_classes = [ScopedRateThrottle]
 
     def post(self, request, question_id, *args, **kwargs):
         question = QASelector.get_question(question_id)

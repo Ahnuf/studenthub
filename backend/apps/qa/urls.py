@@ -1,6 +1,6 @@
 from django.urls import path
 
-from apps.QA.views import (
+from apps.qa.views import (
     QuestionListCreateAPIView,
     QuestionDetailAPIView,
     AnswerListCreateAPIView,

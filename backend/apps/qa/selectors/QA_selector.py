@@ -1,6 +1,6 @@
 from django.db.models import Count, Exists, OuterRef
 
-from apps.QA.models import Answer, AnswerVote, Question
+from apps.qa.models import Answer, AnswerVote, Question
 
 
 class QASelector:
