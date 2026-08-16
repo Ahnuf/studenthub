@@ -43,6 +43,10 @@ class QuestionListSerializer(serializers.ModelSerializer):
 
     is_resolved = serializers.BooleanField(read_only=True)
 
+    is_asker = serializers.SerializerMethodField()
+
+    is_admin = serializers.SerializerMethodField()
+
     class Meta:
         model = Question
         fields = (
@@ -53,8 +57,26 @@ class QuestionListSerializer(serializers.ModelSerializer):
             "asked_by",
             "answer_count",
             "is_resolved",
+            "is_asker",
+            "is_admin",
             "created_at",
         )
+
+    def get_is_asker(self, obj) -> bool:
+        request = self.context.get("request")
+
+        if request is None or not request.user.is_authenticated:
+            return False
+
+        return obj.asker_id == request.user.id
+
+    def get_is_admin(self, obj) -> bool:
+        request = self.context.get("request")
+
+        if request is None or not request.user.is_authenticated:
+            return False
+
+        return bool(request.user.is_staff)
 
 
 class QuestionDetailSerializer(QuestionListSerializer):
@@ -80,6 +102,10 @@ class AnswerCreateSerializer(serializers.ModelSerializer):
         )
 
 
+class QuestionModerationSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()
+
+
 class AnswerDetailSerializer(serializers.ModelSerializer):
 
     answered_by = serializers.CharField(
@@ -91,6 +117,8 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
 
     has_voted = serializers.SerializerMethodField()
 
+    is_admin = serializers.SerializerMethodField()
+
     class Meta:
         model = Answer
         fields = (
@@ -100,11 +128,21 @@ class AnswerDetailSerializer(serializers.ModelSerializer):
             "is_accepted",
             "vote_count",
             "has_voted",
+            "is_admin",
             "created_at",
         )
 
     def get_has_voted(self, obj) -> bool:
-        # Only present when the selector annotated it (i.e. an
-        # authenticated user made the request); default to False
-        # rather than erroring for anonymous/unannotated cases.
         return getattr(obj, "has_voted", False)
+
+    def get_is_admin(self, obj) -> bool:
+        request = self.context.get("request")
+
+        if request is None or not request.user.is_authenticated:
+            return False
+
+        return bool(request.user.is_staff)
+
+
+class AnswerModerationSerializer(serializers.Serializer):
+    is_active = serializers.BooleanField()

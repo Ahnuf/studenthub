@@ -1,0 +1,279 @@
+@import url("https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap");
+
+:root {
+  /* Core palette */
+  --chalk: #f3f2ed;
+  --ink: #16213e;
+  --ink-soft: #4a5578;
+  --lecture-blue: #3a6ea5;
+  --seal-gold: #c9a227;
+  --border: #dcd9d0;
+  --danger: #b3452c;
+  --surface: #ffffff;
+
+  /* Course palette -- the app's signature: one of these per course,
+     carried consistently across every screen (see lib/course-colors.ts) */
+  --course-terracotta: #c1633f;
+  --course-sage: #6b8f71;
+  --course-dusty-blue: #5b7f9e;
+  --course-plum: #7d5a80;
+  --course-ochre: #b8873a;
+  --course-slate: #5c6672;
+
+  /* Type */
+  --font-display: "Fraunces", Georgia, serif;
+  --font-body: "IBM Plex Sans", -apple-system, sans-serif;
+  --font-mono: "IBM Plex Mono", monospace;
+
+  --radius: 10px;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  padding: 0;
+  margin: 0;
+}
+
+body {
+  background: var(--chalk);
+  color: var(--ink);
+  font-family: var(--font-body);
+  font-size: 15px;
+  line-height: 1.5;
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--font-display);
+  font-weight: 600;
+  margin: 0 0 0.5em;
+  letter-spacing: -0.01em;
+}
+
+h1 {
+  font-size: 2rem;
+}
+
+h2 {
+  font-size: 1.4rem;
+}
+
+a {
+  color: var(--lecture-blue);
+}
+
+.numeric {
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+}
+
+/* --- Layout shells --- */
+
+.auth-shell {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+}
+
+.auth-card {
+  width: 100%;
+  max-width: 400px;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 32px;
+}
+
+.auth-eyebrow {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+}
+
+/* --- Forms --- */
+
+.field {
+  margin-bottom: 16px;
+}
+
+.field label {
+  display: block;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  background: var(--chalk);
+  color: var(--ink);
+}
+
+.field input:focus {
+  outline: 2px solid var(--lecture-blue);
+  outline-offset: 1px;
+}
+
+.button-primary {
+  width: 100%;
+  padding: 11px 16px;
+  background: var(--ink);
+  color: var(--chalk);
+  border: none;
+  border-radius: 8px;
+  font-family: var(--font-body);
+  font-weight: 500;
+  font-size: 0.95rem;
+  cursor: pointer;
+}
+
+.button-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.button-primary:focus-visible {
+  outline: 2px solid var(--lecture-blue);
+  outline-offset: 2px;
+}
+
+.form-error {
+  background: #fbeae5;
+  border: 1px solid var(--danger);
+  color: var(--danger);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 0.85rem;
+  margin-bottom: 16px;
+}
+
+.form-footer {
+  margin-top: 20px;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  text-align: center;
+}
+
+/* --- Dashboard shell: the "binder" layout --- */
+
+.dashboard-shell {
+  display: grid;
+  grid-template-columns: 220px 1fr;
+  min-height: 100vh;
+}
+
+@media (max-width: 720px) {
+  .dashboard-shell {
+    grid-template-columns: 1fr;
+  }
+}
+
+.course-rail {
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  padding: 24px 16px;
+}
+
+.course-rail-title {
+  font-family: var(--font-mono);
+  font-size: 0.7rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+
+.course-tab {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.course-tab-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dashboard-main {
+  padding: 32px 40px;
+}
+
+.dashboard-section {
+  margin-bottom: 36px;
+}
+
+.dashboard-section-label {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 12px;
+}
+
+.card-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 16px;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--lecture-blue);
+  border-radius: var(--radius);
+  padding: 20px;
+}
+
+.stat-card-label {
+  font-size: 0.8rem;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+
+.stat-card-value {
+  font-family: var(--font-mono);
+  font-size: 1.8rem;
+  font-weight: 500;
+}
+
+.course-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 16px 18px;
+  border-left: 4px solid transparent;
+}
+
+.course-card-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 4px;
+}
+
+.course-card-code {
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--ink-soft);
+}

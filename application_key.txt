@@ -1,0 +1,5 @@
+application key: K005EOhb+KiRetCGH6DWkmnoPmWvhj4
+
+Key ID: 0058290286654550000000001
+
+Key Name: studenthub-django

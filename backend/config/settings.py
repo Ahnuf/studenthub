@@ -73,7 +73,9 @@ else:
 
 ALLOWED_HOSTS = []
 
-
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:5173",
+]
 
 AUTH_USER_MODEL = "accounts.User"
 
@@ -192,18 +194,14 @@ STATIC_URL = 'static/'
 EMAIL_BACKEND = "django.core.mail.backends.console.EmailBackend"
 
 REST_FRAMEWORK = {
-    # ... your existing settings ...
-    "DEFAULT_THROTTLE_RATES": {
-        "password_reset": "5/hour",
-        "email_verification": "5/hour",
-    },
-}
-
-REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
     "DEFAULT_SCHEMA_CLASS": "drf_spectacular.openapi.AutoSchema",
+    "DEFAULT_THROTTLE_RATES": {
+        "password_reset": "5/hour",
+        "email_verification": "5/hour",
+    },
 }
 
 # REST_FRAMEWORK = {

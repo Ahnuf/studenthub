@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.views import APIView
-# from apps.accounts.api.serializers import TokenRefreshSerializer
+from apps.accounts.api.serializers.token import TokenRefreshSerializer
 from core.api.responses import success_response
 
 

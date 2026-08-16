@@ -6,6 +6,8 @@ from apps.qa.views import (
     AnswerListCreateAPIView,
     AnswerAcceptAPIView,
     AnswerVoteAPIView,
+    QuestionModerationAPIView,
+    AnswerModerationAPIView,
 )
 
 app_name = "qa"
@@ -35,5 +37,16 @@ urlpatterns = [
         "answers/<int:answer_id>/vote/",
         AnswerVoteAPIView.as_view(),
         name="answer-vote",
+    ),
+    path(
+    "questions/<int:question_id>/moderate/",
+    QuestionModerationAPIView.as_view(),
+    name="question-moderate",
+    ),
+
+    path(
+        "answers/<int:answer_id>/moderate/",
+        AnswerModerationAPIView.as_view(),
+        name="answer-moderate",
     ),
 ]

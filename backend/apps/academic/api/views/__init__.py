@@ -1,3 +1,4 @@
 from .academic_session import AcademicSessionReferenceAPIView
+from .course import CourseReferenceAPIView
 from .program import ProgramReferenceAPIView
 from .university import UniversityReferenceAPIView

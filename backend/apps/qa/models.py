@@ -37,6 +37,11 @@ class Question(TimeStampedModel):
         verbose_name = "Question"
         verbose_name_plural = "Questions"
 
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
+    )
+
     @property
     def is_resolved(self) -> bool:
         return self.answers.filter(is_accepted=True).exists()
@@ -69,6 +74,11 @@ class Answer(TimeStampedModel):
 
     is_accepted = models.BooleanField(
         default=False,
+    )
+
+    is_active = models.BooleanField(
+        default=True,
+        db_index=True,
     )
 
     class Meta:

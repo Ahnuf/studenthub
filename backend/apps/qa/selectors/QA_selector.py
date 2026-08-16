@@ -17,6 +17,7 @@ class QASelector:
 
         queryset = (
             Question.objects
+            .filter(is_active=True)
             .select_related("course", "asker")
             .annotate(answer_count=Count("answers"))
         )
@@ -31,7 +32,7 @@ class QASelector:
         return (
             Question.objects
             .select_related("course", "asker")
-            .filter(id=question_id)
+            .filter(id=question_id, is_active=True)
             .first()
         )
 
@@ -46,7 +47,7 @@ class QASelector:
         queryset = (
             Answer.objects
             .select_related("user")
-            .filter(question_id=question_id)
+            .filter(question_id=question_id, is_active=True)
             .annotate(vote_count=Count("votes"))
         )
 
@@ -67,6 +68,25 @@ class QASelector:
         return (
             Answer.objects
             .select_related("question", "user")
+            .filter(id=answer_id, is_active=True)
+            .first()
+        )
+
+    @staticmethod
+    def get_question_for_moderation(question_id: int):
+        return (
+            Question.objects
+            .select_related("course", "asker")
+            .filter(id=question_id)
+            .first()
+        )
+
+
+    @staticmethod
+    def get_answer_for_moderation(answer_id: int):
+        return (
+            Answer.objects
+            .select_related("question", "user")
             .filter(id=answer_id)
             .first()
         )
@@ -80,7 +100,7 @@ class QASelector:
         return (
             Question.objects
             .select_related("course")
-            .filter(user=user)
+            .filter(asker=user)
             .annotate(
                 answer_count=Count("answers"),
                 is_resolved=Exists(

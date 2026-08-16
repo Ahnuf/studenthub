@@ -108,3 +108,28 @@ class QAService:
             "has_voted": has_voted,
             "vote_count": vote_count,
         }
+
+    @staticmethod
+    @transaction.atomic
+    def update_question_status(
+        question: Question,
+        *,
+        is_active: bool,
+    ) -> Question:
+        question.is_active = is_active
+        question.save(update_fields=["is_active", "updated_at"])
+
+        return question
+
+
+    @staticmethod
+    @transaction.atomic
+    def update_answer_status(
+        answer: Answer,
+        *,
+        is_active: bool,
+    ) -> Answer:
+        answer.is_active = is_active
+        answer.save(update_fields=["is_active", "updated_at"])
+
+        return answer

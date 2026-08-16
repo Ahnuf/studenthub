@@ -2,6 +2,7 @@ from django.urls import path
 
 from apps.academic.api.views import (
     AcademicSessionReferenceAPIView,
+    CourseReferenceAPIView,
     ProgramReferenceAPIView,
     UniversityReferenceAPIView,
 )
@@ -23,5 +24,10 @@ urlpatterns = [
         "sessions/",
         AcademicSessionReferenceAPIView.as_view(),
         name="sessions",
+    ),
+    path(
+        "courses/",
+        CourseReferenceAPIView.as_view(),
+        name="courses",
     ),
 ]

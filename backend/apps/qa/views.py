@@ -3,6 +3,7 @@ from rest_framework.generics import GenericAPIView
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.exceptions import NotFound
 from rest_framework.throttling import ScopedRateThrottle
+
 from apps.qa.selectors.QA_selector import QASelector
 from apps.qa.services.QA_service import QAService
 from apps.qa.serializers.QA_serializer import (
@@ -11,7 +12,11 @@ from apps.qa.serializers.QA_serializer import (
     QuestionDetailSerializer,
     AnswerCreateSerializer,
     AnswerDetailSerializer,
+    QuestionModerationSerializer,
+    AnswerModerationSerializer,
 )
+
+from apps.common.permissions import IsAdmin
 from core.api.responses import success_response
 
 
@@ -39,9 +44,15 @@ class QuestionListCreateAPIView(GenericAPIView):
     def get(self, request, *args, **kwargs):
         course_id = request.query_params.get("course_id")
 
-        questions = QASelector.list_questions(course_id=course_id)
+        questions = QASelector.list_questions(
+            course_id=course_id,
+        )
 
-        serializer = self.get_serializer(questions, many=True)
+        serializer = self.get_serializer(
+            questions,
+            many=True,
+            context={"request": request},
+        )
 
         return success_response(
             message="Questions fetched successfully.",
@@ -54,13 +65,17 @@ class QuestionListCreateAPIView(GenericAPIView):
             data=request.data,
             context={"request": request},
         )
+
         serializer.is_valid(raise_exception=True)
 
         question = serializer.save()
 
         return success_response(
             message="Question posted successfully.",
-            data=QuestionDetailSerializer(question).data,
+            data=QuestionDetailSerializer(
+                question,
+                context={"request": request},
+            ).data,
             status_code=status.HTTP_201_CREATED,
         )
 
@@ -79,14 +94,55 @@ class QuestionDetailAPIView(GenericAPIView):
         if question is None:
             raise NotFound("Question not found.")
 
-        answers = QASelector.list_answers(question_id, user=request.user)
+        answers = QASelector.list_answers(
+            question_id,
+            user=request.user,
+        )
 
         return success_response(
             message="Question fetched successfully.",
             data={
-                "question": self.get_serializer(question).data,
-                "answers": AnswerDetailSerializer(answers, many=True).data,
+                "question": QuestionDetailSerializer(
+                    question,
+                    context={"request": request},
+                ).data,
+                "answers": AnswerDetailSerializer(
+                    answers,
+                    many=True,
+                    context={"request": request},
+                ).data,
             },
+            status_code=status.HTTP_200_OK,
+        )
+
+
+class QuestionModerationAPIView(GenericAPIView):
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = QuestionModerationSerializer
+
+    def patch(self, request, question_id, *args, **kwargs):
+        question = QASelector.get_question_for_moderation(
+            question_id,
+        )
+
+        if question is None:
+            raise NotFound("Question not found.")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        question = QAService.update_question_status(
+            question,
+            is_active=serializer.validated_data["is_active"],
+        )
+
+        return success_response(
+            message="Question moderation updated successfully.",
+            data=QuestionDetailSerializer(
+                question,
+                context={"request": request},
+            ).data,
             status_code=status.HTTP_200_OK,
         )
 
@@ -117,13 +173,17 @@ class AnswerListCreateAPIView(GenericAPIView):
                 "question": question,
             },
         )
+
         serializer.is_valid(raise_exception=True)
 
         answer = serializer.save()
 
         return success_response(
             message="Answer posted successfully.",
-            data=AnswerDetailSerializer(answer).data,
+            data=AnswerDetailSerializer(
+                answer,
+                context={"request": request},
+            ).data,
             status_code=status.HTTP_201_CREATED,
         )
 
@@ -142,11 +202,17 @@ class AnswerAcceptAPIView(GenericAPIView):
         if answer is None:
             raise NotFound("Answer not found.")
 
-        answer = QAService.accept_answer(answer, user=request.user)
+        answer = QAService.accept_answer(
+            answer,
+            user=request.user,
+        )
 
         return success_response(
             message="Answer marked as accepted.",
-            data=AnswerDetailSerializer(answer).data,
+            data=AnswerDetailSerializer(
+                answer,
+                context={"request": request},
+            ).data,
             status_code=status.HTTP_200_OK,
         )
 
@@ -164,14 +230,50 @@ class AnswerVoteAPIView(GenericAPIView):
         if answer is None:
             raise NotFound("Answer not found.")
 
-        result = QAService.toggle_upvote(answer, user=request.user)
+        result = QAService.toggle_upvote(
+            answer,
+            user=request.user,
+        )
 
         message = (
-            "Upvote added." if result["has_voted"] else "Upvote removed."
+            "Upvote added."
+            if result["has_voted"]
+            else "Upvote removed."
         )
 
         return success_response(
             message=message,
             data=result,
+            status_code=status.HTTP_200_OK,
+        )
+
+
+class AnswerModerationAPIView(GenericAPIView):
+
+    permission_classes = [IsAuthenticated, IsAdmin]
+    serializer_class = AnswerModerationSerializer
+
+    def patch(self, request, answer_id, *args, **kwargs):
+        answer = QASelector.get_answer_for_moderation(
+            answer_id,
+        )
+
+        if answer is None:
+            raise NotFound("Answer not found.")
+
+        serializer = self.get_serializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        answer = QAService.update_answer_status(
+            answer,
+            is_active=serializer.validated_data["is_active"],
+        )
+
+        return success_response(
+            message="Answer moderation updated successfully.",
+            data=AnswerDetailSerializer(
+                answer,
+                context={"request": request},
+            ).data,
             status_code=status.HTTP_200_OK,
         )
