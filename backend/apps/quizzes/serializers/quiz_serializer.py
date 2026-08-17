@@ -6,21 +6,32 @@ from apps.quizzes.services.quiz_service import QuizService
 
 
 class QuizCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Quiz
         fields = ("course", "title", "description")
 
     def create(self, validated_data):
         user = self.context["request"].user
-        return QuizService.create_quiz(user=user, **validated_data)
+        return QuizService.create_quiz(
+            user=user,
+            **validated_data,
+        )
 
 
 class QuizListSerializer(serializers.ModelSerializer):
+    course_title = serializers.CharField(
+        source="course.title",
+        read_only=True,
+    )
 
-    course_title = serializers.CharField(source="course.title", read_only=True)
-    created_by = serializers.CharField(source="creator.get_full_name", read_only=True)
+    created_by = serializers.CharField(
+        source="creator.get_full_name",
+        read_only=True,
+    )
+
     question_count = serializers.IntegerField(read_only=True)
+
+    is_creator = serializers.SerializerMethodField()
 
     class Meta:
         model = Quiz
@@ -32,17 +43,20 @@ class QuizListSerializer(serializers.ModelSerializer):
             "description",
             "created_by",
             "question_count",
+            "is_creator",
             "created_at",
         )
 
+    def get_is_creator(self, obj) -> bool:
+        request = self.context.get("request")
+
+        if request is None or not request.user.is_authenticated:
+            return False
+
+        return obj.creator_id == request.user.id
+
 
 class QuizDetailSerializer(QuizListSerializer):
-    """
-    Adds the requesting user's own attempt status -- how many of
-    their 5 attempts they've used, and whether they can attempt
-    again. Requires `request` in context.
-    """
-
     attempts_used = serializers.SerializerMethodField()
     attempts_remaining = serializers.SerializerMethodField()
     can_attempt = serializers.SerializerMethodField()
@@ -56,9 +70,18 @@ class QuizDetailSerializer(QuizListSerializer):
 
     def _attempt_status(self, obj) -> dict:
         request = self.context.get("request")
+
         if request is None or not request.user.is_authenticated:
-            return {"attempts_used": 0, "attempts_remaining": 0, "can_attempt": False}
-        return QuizSelector.get_attempt_status(request.user, obj)
+            return {
+                "attempts_used": 0,
+                "attempts_remaining": 0,
+                "can_attempt": False,
+            }
+
+        return QuizSelector.get_attempt_status(
+            request.user,
+            obj,
+        )
 
     def get_attempts_used(self, obj) -> int:
         return self._attempt_status(obj)["attempts_used"]
@@ -71,56 +94,59 @@ class QuizDetailSerializer(QuizListSerializer):
 
 
 class QuizUpdateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Quiz
         fields = ("title", "description")
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
-        return QuizService.update_quiz(instance, user=user, **validated_data)
+        return QuizService.update_quiz(
+            instance,
+            user=user,
+            **validated_data,
+        )
 
-
-# --- Choices: two different serializers on purpose ---
 
 class QuizChoicePublicSerializer(serializers.ModelSerializer):
-    """
-    Used when a student is TAKING the quiz. Never includes
-    is_correct -- that would hand out the answer key.
-    """
-
     class Meta:
         model = QuizChoice
         fields = ("id", "text")
 
 
-class QuizChoiceReviewSerializer(serializers.ModelSerializer):
-    """
-    Used only after an attempt has been submitted, for reviewing
-    results -- is_correct is safe to reveal at this point.
-    """
+class QuizChoiceCreatorSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = QuizChoice
+        fields = ("id", "text", "is_correct", "order")
 
+
+class QuizChoiceReviewSerializer(serializers.ModelSerializer):
     class Meta:
         model = QuizChoice
         fields = ("id", "text", "is_correct")
 
 
 class QuizChoiceInputSerializer(serializers.Serializer):
-    """
-    Input shape for creating/replacing a question's choices.
-    """
-
     text = serializers.CharField(max_length=255)
     is_correct = serializers.BooleanField(default=False)
     order = serializers.IntegerField(required=False)
 
 
 class QuizQuestionPublicSerializer(serializers.ModelSerializer):
-    """
-    What a student sees while taking the quiz -- no answer key.
-    """
+    choices = QuizChoicePublicSerializer(
+        many=True,
+        read_only=True,
+    )
 
-    choices = QuizChoicePublicSerializer(many=True, read_only=True)
+    class Meta:
+        model = QuizQuestion
+        fields = ("id", "text", "order", "choices")
+
+
+class QuizQuestionCreatorSerializer(serializers.ModelSerializer):
+    choices = QuizChoiceCreatorSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = QuizQuestion
@@ -148,7 +174,10 @@ class QuizQuestionCreateSerializer(serializers.Serializer):
 class QuizQuestionUpdateSerializer(serializers.Serializer):
     text = serializers.CharField(required=False)
     order = serializers.IntegerField(required=False)
-    choices = QuizChoiceInputSerializer(many=True, required=False)
+    choices = QuizChoiceInputSerializer(
+        many=True,
+        required=False,
+    )
 
     def update(self, instance, validated_data):
         user = self.context["request"].user
@@ -162,11 +191,12 @@ class QuizQuestionUpdateSerializer(serializers.Serializer):
         )
 
 
-# --- Attempts ---
-
 class AttemptAnswerInputSerializer(serializers.Serializer):
     question_id = serializers.IntegerField()
-    choice_id = serializers.IntegerField(required=False, allow_null=True)
+    choice_id = serializers.IntegerField(
+        required=False,
+        allow_null=True,
+    )
 
 
 class SubmitAttemptSerializer(serializers.Serializer):
@@ -184,30 +214,33 @@ class SubmitAttemptSerializer(serializers.Serializer):
 
 
 class AttemptAnswerReviewSerializer(serializers.Serializer):
-    """
-    Post-submission review for a single question: what was asked,
-    every choice WITH is_correct revealed, and what the student
-    picked.
-    """
-
-    question_id = serializers.IntegerField(source="question.id")
-    question_text = serializers.CharField(source="question.text")
+    question_id = serializers.IntegerField(
+        source="question.id",
+    )
+    question_text = serializers.CharField(
+        source="question.text",
+    )
     choices = serializers.SerializerMethodField()
     selected_choice_id = serializers.IntegerField(
-        source="selected_choice.id", allow_null=True
+        source="selected_choice.id",
+        allow_null=True,
     )
     is_correct = serializers.BooleanField()
 
     def get_choices(self, obj):
         return QuizChoiceReviewSerializer(
-            obj.question.choices.all(), many=True
+            obj.question.choices.all(),
+            many=True,
         ).data
 
 
 class QuizAttemptSerializer(serializers.ModelSerializer):
-
     score_percentage = serializers.FloatField(read_only=True)
-    answers = AttemptAnswerReviewSerializer(many=True, read_only=True)
+
+    answers = AttemptAnswerReviewSerializer(
+        many=True,
+        read_only=True,
+    )
 
     class Meta:
         model = QuizAttempt

@@ -10,6 +10,7 @@ export interface FlashcardDeck {
     description: string;
     created_by: string;
     card_count: number;
+    is_creator: boolean;
     created_at: string;
     updated_at: string;
 }

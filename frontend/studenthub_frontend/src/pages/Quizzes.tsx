@@ -2,32 +2,26 @@ import { useEffect, useState } from "react";
 import axios from "axios";
 
 import { getCourses } from "../api/academic";
-import {
-    getDecks,
-} from "../api/flashcards";
+import { getQuizzes } from "../api/quizzes";
 
-import DeckForm from "../components/flashcards/DeckForm";
-import DeckList from "../components/flashcards/DeckList";
+import QuizList from "../components/quizzes/QuizList";
 
 import type { CourseOption } from "../api/academic";
-import type { FlashcardDeck } from "../types/flashcards";
+import type { Quiz } from "../types/quizzes";
 
 interface ApiErrorResponse {
     success: boolean;
     message: string;
 }
 
-export default function Flashcards() {
-    const [decks, setDecks] = useState<FlashcardDeck[]>([]);
+export default function Quizzes() {
+    const [quizzes, setQuizzes] = useState<Quiz[]>([]);
     const [courses, setCourses] = useState<CourseOption[]>([]);
 
     const [searchQuery, setSearchQuery] = useState("");
     const [selectedCourse, setSelectedCourse] = useState<
         number | undefined
     >(undefined);
-
-    const [editingDeck, setEditingDeck] =
-        useState<FlashcardDeck | null>(null);
 
     const [isLoading, setIsLoading] = useState(true);
     const [isSearching, setIsSearching] = useState(false);
@@ -36,23 +30,21 @@ export default function Flashcards() {
     useEffect(() => {
         async function loadInitialData() {
             try {
-                const [decksData, coursesData] = await Promise.all([
-                    getDecks(),
+                const [quizzesData, coursesData] = await Promise.all([
+                    getQuizzes(),
                     getCourses(),
                 ]);
 
-                setDecks(decksData);
+                setQuizzes(quizzesData);
                 setCourses(coursesData);
             } catch (err: unknown) {
                 if (axios.isAxiosError<ApiErrorResponse>(err)) {
                     setError(
                         err.response?.data?.message ??
-                            "Failed to load flashcard decks.",
+                            "Failed to load quizzes.",
                     );
                 } else {
-                    setError(
-                        "Failed to load flashcard decks.",
-                    );
+                    setError("Failed to load quizzes.");
                 }
             } finally {
                 setIsLoading(false);
@@ -62,7 +54,7 @@ export default function Flashcards() {
         loadInitialData();
     }, []);
 
-    async function loadDecks(
+    async function loadQuizzes(
         query: string,
         courseId: number | undefined,
     ) {
@@ -70,18 +62,20 @@ export default function Flashcards() {
         setIsSearching(true);
 
         try {
-            const data = await getDecks(courseId, query);
-            setDecks(data);
+            const data = await getQuizzes(
+                courseId,
+                query,
+            );
+
+            setQuizzes(data);
         } catch (err: unknown) {
             if (axios.isAxiosError<ApiErrorResponse>(err)) {
                 setError(
                     err.response?.data?.message ??
-                        "Failed to load flashcard decks.",
+                        "Failed to load quizzes.",
                 );
             } else {
-                setError(
-                    "Failed to load flashcard decks.",
-                );
+                setError("Failed to load quizzes.");
             }
         } finally {
             setIsSearching(false);
@@ -93,7 +87,7 @@ export default function Flashcards() {
     ) {
         event.preventDefault();
 
-        void loadDecks(
+        void loadQuizzes(
             searchQuery.trim(),
             selectedCourse,
         );
@@ -109,28 +103,10 @@ export default function Flashcards() {
 
         setSelectedCourse(courseId);
 
-        void loadDecks(
+        void loadQuizzes(
             searchQuery.trim(),
             courseId,
         );
-    }
-
-    function handleCreated(deck: FlashcardDeck) {
-        setDecks((current) => [
-            deck,
-            ...current,
-        ]);
-        setEditingDeck(null);
-    }
-
-    function handleUpdated(deck: FlashcardDeck) {
-        setDecks((current) =>
-            current.map((item) =>
-                item.id === deck.id ? deck : item,
-            ),
-        );
-
-        setEditingDeck(null);
     }
 
     return (
@@ -138,20 +114,13 @@ export default function Flashcards() {
             <div className="mx-auto max-w-5xl space-y-6">
                 <div>
                     <h1 className="text-2xl font-semibold text-gray-900">
-                        Flashcards
+                        Quizzes
                     </h1>
 
                     <p className="mt-1 text-sm text-gray-500">
-                        Study and create shared flashcard decks.
+                        Test your knowledge with student-created quizzes.
                     </p>
                 </div>
-
-                <DeckForm
-                    editingDeck={editingDeck}
-                    onCreated={handleCreated}
-                    onUpdated={handleUpdated}
-                    onCancelEdit={() => setEditingDeck(null)}
-                />
 
                 <section className="rounded-lg bg-white p-6 shadow-sm">
                     <div className="flex flex-col gap-3 md:flex-row">
@@ -167,7 +136,7 @@ export default function Flashcards() {
                                         event.target.value,
                                     )
                                 }
-                                placeholder="Search flashcard decks..."
+                                placeholder="Search quizzes..."
                                 className="flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm focus:border-blue-500 focus:outline-none focus:ring-1 focus:ring-blue-500"
                             />
 
@@ -216,11 +185,11 @@ export default function Flashcards() {
                 {isLoading ? (
                     <div className="rounded-lg bg-white p-6 shadow-sm">
                         <p className="text-sm text-gray-500">
-                            Loading flashcard decks...
+                            Loading quizzes...
                         </p>
                     </div>
                 ) : (
-                    <DeckList decks={decks} />
+                    <QuizList quizzes={quizzes} />
                 )}
             </div>
         </div>

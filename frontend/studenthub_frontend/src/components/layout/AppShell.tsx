@@ -70,6 +70,13 @@ export default function AppShell() {
                         </Link>
 
                         <Link
+                            to="/quizzes"
+                            className="text-sm text-gray-600 hover:text-gray-900"
+                        >
+                            Quizzes
+                        </Link>
+
+                        <Link
                             to="/timetable"
                             className="text-sm text-gray-600 hover:text-gray-900"
                         >

@@ -12,17 +12,15 @@ import NoteDetail from "../pages/NoteDetail";
 import QA from "../pages/QA";
 import Flashcards from "../pages/Flashcards";
 import FlashcardDeck from "../pages/FlashcardDeck";
+import Quizzes from "../pages/Quizzes";
+import QuizDetail from "../pages/QuizDetail";
+import QuizAttemptReview from "../pages/QuizAttemptReview";
 
 export default function AppRouter() {
     return (
         <Routes>
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
-            <Route path="/notes" element={<Notes />} />
-            <Route path="/notes/:noteId" element={<NoteDetail />}/>
-            <Route path="/qa" element={<QA />} />
-            <Route path="/flashcards" element={<Flashcards />} />
-            <Route path="/flashcards/decks/:deckId" element={<FlashcardDeck />}/>
 
             <Route element={<ProtectedRoute />}>
                 <Route path="/profile/create" element={<CreateProfile />} />
@@ -31,6 +29,14 @@ export default function AppRouter() {
                     <Route path="/dashboard" element={<Dashboard />} />
                     <Route path="/assignments" element={<Assignments />} />
                     <Route path="/timetable" element={<Timetable />} />
+                    <Route path="/notes" element={<Notes />} />
+                    <Route path="/notes/:noteId" element={<NoteDetail />}/>
+                    <Route path="/qa" element={<QA />} />
+                    <Route path="/flashcards" element={<Flashcards />} />
+                    <Route path="/flashcards/decks/:deckId" element={<FlashcardDeck />}/>
+                    <Route path="/quizzes" element={<Quizzes />} />
+                    <Route path="/quizzes/:quizId" element={<QuizDetail />}/>
+                    <Route path="/quizzes/attempts/:attemptId" element={<QuizAttemptReview />}/>
                     {/* Notes, Flashcards, Quizzes, QA go here next */}
                 </Route>
             </Route>

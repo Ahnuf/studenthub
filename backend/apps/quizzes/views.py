@@ -39,9 +39,16 @@ class QuizListCreateAPIView(GenericAPIView):
         course_id = request.query_params.get("course_id")
         query = request.query_params.get("q")
 
-        quizzes = QuizSelector.list_quizzes(course_id=course_id, query=query)
+        quizzes = QuizSelector.list_quizzes(
+            course_id=course_id,
+            query=query,
+        )
 
-        serializer = self.get_serializer(quizzes, many=True)
+        serializer = self.get_serializer(
+            quizzes,
+            many=True,
+            context={"request": request},
+        )
 
         return success_response(
             message="Quizzes fetched successfully.",
@@ -66,56 +73,69 @@ class QuizListCreateAPIView(GenericAPIView):
         )
 
 
-class QuizDetailAPIView(GenericAPIView):
+class QuizQuestionDetailAPIView(GenericAPIView):
+    """
+    GET/PATCH/DELETE a single question.
+    GET is creator-only because it exposes the answer key.
+    PATCH/DELETE are also creator-only through the service layer.
+    """
 
     permission_classes = [IsAuthenticated]
+    serializer_class = QuizQuestionUpdateSerializer
 
-    def get_serializer_class(self):
-        if self.request.method == "PATCH":
-            return QuizUpdateSerializer
-        return QuizDetailSerializer
+    def get_question(self, question_id):
+        question = QuizSelector.get_question_by_id(question_id)
 
-    def get_quiz(self, quiz_id):
-        quiz = QuizSelector.get_quiz(quiz_id)
-        if quiz is None:
-            raise NotFound("Quiz not found.")
-        return quiz
+        if question is None:
+            raise NotFound("Question not found.")
 
-    def get(self, request, quiz_id, *args, **kwargs):
-        quiz = self.get_quiz(quiz_id)
+        return question
 
-        serializer = self.get_serializer(quiz, context={"request": request})
+    def get(self, request, question_id, *args, **kwargs):
+        question = self.get_question(question_id)
 
-        return success_response(
-            message="Quiz fetched successfully.",
-            data=serializer.data,
-            status_code=status.HTTP_200_OK,
-        )
-
-    def patch(self, request, quiz_id, *args, **kwargs):
-        quiz = self.get_quiz(quiz_id)
-
-        serializer = self.get_serializer(
-            quiz, data=request.data, partial=True, context={"request": request}
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
+        if question.quiz.creator_id != request.user.id:
+            raise NotFound("Question not found.")
 
         return success_response(
-            message="Quiz updated successfully.",
-            data=QuizDetailSerializer(
-                QuizSelector.get_quiz(quiz_id), context={"request": request}
+            message="Question fetched successfully.",
+            data=QuizQuestionCreatorSerializer(
+                question,
             ).data,
             status_code=status.HTTP_200_OK,
         )
 
-    def delete(self, request, quiz_id, *args, **kwargs):
-        quiz = self.get_quiz(quiz_id)
+    def patch(self, request, question_id, *args, **kwargs):
+        question = self.get_question(question_id)
 
-        QuizService.delete_quiz(quiz, user=request.user)
+        serializer = self.get_serializer(
+            question,
+            data=request.data,
+            partial=True,
+            context={"request": request},
+        )
+
+        serializer.is_valid(raise_exception=True)
+        question = serializer.save()
 
         return success_response(
-            message="Quiz deleted successfully.",
+            message="Question updated successfully.",
+            data=QuizQuestionPublicSerializer(
+                question,
+            ).data,
+            status_code=status.HTTP_200_OK,
+        )
+
+    def delete(self, request, question_id, *args, **kwargs):
+        question = self.get_question(question_id)
+
+        QuizService.delete_question(
+            question,
+            user=request.user,
+        )
+
+        return success_response(
+            message="Question deleted successfully.",
             status_code=status.HTTP_200_OK,
         )
 
